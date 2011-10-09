@@ -7,13 +7,14 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import count.Count;
+
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Jeremiah Via <jxv911@cs.bham.ac.uk>
  */
 public class Start extends ManagedComponent implements WorkingMemoryChangeReceiver {
@@ -21,14 +22,12 @@ public class Start extends ManagedComponent implements WorkingMemoryChangeReceiv
     private int max;
     private Random random;
 
-    public Start()
-    {
+    public Start() {
         random = new Random();
     }
 
     @Override
-    protected void configure(Map<String, String> _config)
-    {
+    protected void configure(Map<String, String> _config) {
         if (_config.containsKey("--max")) {
             max = Integer.parseInt(_config.get("--max"));
         } else {
@@ -37,8 +36,7 @@ public class Start extends ManagedComponent implements WorkingMemoryChangeReceiv
     }
 
     @Override
-    protected void start()
-    {
+    protected void start() {
         addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Number.class, WorkingMemoryOperation.DELETE), this);
 
         try {
@@ -49,11 +47,18 @@ public class Start extends ManagedComponent implements WorkingMemoryChangeReceiv
     }
 
     @Override
-    public void workingMemoryChanged(WorkingMemoryChange wmc) throws CASTException
-    {
+    public void workingMemoryChanged(WorkingMemoryChange wmc) throws CASTException {
         int val = random.nextInt(max);
         println("---------------------------");
         println(String.format("Value: %4d      Count: %3d", val, 0));
+
+        if (Count.isErrorCondition())
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         addToWorkingMemory(newDataID(), new Number(val, 0));
     }
 }
